@@ -8,7 +8,6 @@ router.post('/duos/:duoId/startOfYearMeeting', authMiddleware, (req: Request, re
 router.post('/duos/:duoId/midTermMeeting', authMiddleware, (req: Request, res: Response) => meetingController.submitMidTermMeeting(req, res));
 router.post('/duos/:duoId/endOfYearMeeting', authMiddleware, (req: Request, res: Response) => meetingController.submitEndOfYearMeeting(req, res));
 
-// Routes GET pour récupérer les informations des réunions existantes par studentId
 router.get('/students/:studentId/startOfYearMeeting', authMiddleware, (req: Request, res: Response) => meetingController.getStartOfYearMeeting(req, res));
 router.get('/students/:studentId/midTermMeeting', authMiddleware, (req: Request, res: Response) => meetingController.getMidTermMeeting(req, res));
 router.get('/students/:studentId/endOfYearMeeting', authMiddleware, (req: Request, res: Response) => meetingController.getEndOfYearMeeting(req, res));

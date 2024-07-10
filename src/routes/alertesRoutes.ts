@@ -1,8 +1,11 @@
-import { Request, Response, Router } from "express";
-import authMiddleware from "../middlewares/authMiddleware";
-import alertesController from "../controllers/alertesConroller";
+import { Router } from 'express';
+import alertesController from '../controllers/alertesController';
+import authMiddleware from '../middlewares/authMiddleware';
 
 const router = Router();
 
-router.get('/alertes'), authMiddleware, (req: Request, res : Response) => alertesController.getAllAlertes(req, res); 
+router.get('/alertes', authMiddleware, (req, res) => alertesController.getAllAlertes(req, res));
+router.get('/alertes/user/:userId', authMiddleware, (req, res) => alertesController.getAlertesByUserId(req, res));
+router.get('/alertes/type/:type', authMiddleware, (req, res) => alertesController.getAlertesByType(req, res));
+
 export default router;

@@ -1,4 +1,4 @@
-import Alertes from '../models/IAlertes';
+import Alertes from '../models/Alertes';
 
 class AlertesRepository {
   async getAllAlertes() {
