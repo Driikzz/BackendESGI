@@ -6,27 +6,29 @@ import userService from '../services/userService';
 const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
-  console.log(email,password)
+  console.log(`Login attempt for email: ${email}`);
 
   try {
-    // Vérifie si l'utilisateur existe
     const user: any = await userService.getUserByEmail(email);
     if (!user) {
+      console.log(`User not found for email: ${email}`);
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Vérifie si le mot de passe est correct
+    console.log(`Fetched user: ${JSON.stringify(user)}`);
+    console.log(`User's stored hashed password: ${user.password}`);
+    console.log(`Password provided for comparison: ${password}`);
+
     const isPasswordValid = await bcrypt.compare(password, user.password);
+    console.log(`Password valid: ${isPasswordValid}`);
     if (!isPasswordValid) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    // Génère un token JWT
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET as string, {
-      expiresIn: '1400h', // Optionnel : délai d'expiration du token
+      expiresIn: '1400h',
     });
 
-    // Retourne le token JWT
     return res.status(200).json({ token });
   } catch (error) {
     console.error('Error during login:', error);
