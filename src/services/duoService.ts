@@ -101,6 +101,10 @@ class DuoService {
     async getDuosByUserId(userId: number) {
         return await duoRepository.findAll({ where: { idAlternant: userId } });
       }
+
+    async getDuosByTuteurId(id: number) {
+        return await duoRepository.getDuosByTuteurId(id);
+    }
     
 }
 

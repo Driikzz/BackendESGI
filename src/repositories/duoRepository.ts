@@ -156,6 +156,15 @@ class DuoRepository {
   async findAll(condition = {}) {
     return await Duo.findAll(condition);
   }
+
+  async getDuosByTuteurId(id: number) {
+    return await Duo.findAll({
+      where: {
+        idTuteur: id
+      }
+    });
+  }
+
 }
 
 export default new DuoRepository();
