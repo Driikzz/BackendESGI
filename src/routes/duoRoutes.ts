@@ -31,5 +31,7 @@ router.get('/entreprise/:id/duos', authMiddleware, (req: Request, res: Response)
 
 // Route pour modifier les champs Alternant, Tuteur et Suiveur d'un duo
 router.put('/:id/users', authMiddleware, (req: Request, res: Response) => duoController.updateDuoUsers(req, res));
+// Route pour récupérer les duos à partir de l'id d'un tuteur
+router.get('/tuteur/:id/duos', authMiddleware, (req: Request, res: Response) => duoController.getDuosByTuteurId(req, res));
 
 export default router;
