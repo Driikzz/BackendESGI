@@ -18,7 +18,7 @@ app.use(bodyParser.json());
 
 app.use(cors({
     origin: 'http://localhost:3001', 
-    methods: ['GET', 'POST' , 'PUT', 'DELETE'], 
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], 
     allowedHeaders: ['Content-Type', 'Authorization'], 
 }));
 
@@ -32,7 +32,7 @@ app.use('/api/export', exportRoutes); // Assurez-vous que la route d'exportation
 
 const PORT = process.env.PORT || 3000;
 
-sequelize.sync({alter: true}).then(() => {
+sequelize.sync({ alter: true }).then(() => {
   console.log('Database synchronized!');
   app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
