@@ -63,3 +63,20 @@ export async function sendRdvCreatedEmail(tuteurEmail: string, alternantEmail: s
     }
 }
 
+export async function sendRdvCancelledEmail(email: string, rdv: any): Promise<void> {
+    const mailOptions = {
+      from: process.env.EMAIL_USER!, // L'email à partir duquel envoyer
+      to: email, // L'email de l'utilisateur
+      subject: 'Annulation de Rendez-vous',
+      text: `Le rendez-vous prévu pour ${rdv.dateRdv.toLocaleString()} a été annulé. Veuillez prendre les dispositions nécessaires.`,
+    };
+  
+    try {
+      await transporter.sendMail(mailOptions);
+      console.log('Email sent successfully');
+    } catch (error) {
+      console.error('Error sending email:', error);
+      throw new Error('Failed to send cancellation email');
+    }
+}
+

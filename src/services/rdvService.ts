@@ -8,6 +8,14 @@ class rdvService {
     static async getRdvBySuiveurId(id: number) {
         return rdvRepository.getRdvBySuiveurId(id);
     }
+
+    static async deleteRdv(id: number) {
+        return rdvRepository.deleteRdv(id);
+    }
+
+    static async findRdvById(id: number) {
+        return rdvRepository.findRdvById(id);
+    }
 }
 
 export default rdvService;
