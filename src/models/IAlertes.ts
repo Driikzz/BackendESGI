@@ -9,7 +9,7 @@ export interface IAlertes {
     message: string;
     datedeCreation: Date;
     dateDeTraitement: Date | null;
-    traitantId: number | null; // ID of the person who treated the alert
+    traitantId: number | null; 
 }
 
 interface AlertesCreationAttributes extends Optional<IAlertes, 'id'> {}
