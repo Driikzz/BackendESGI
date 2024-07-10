@@ -1,9 +1,12 @@
-import { Request, Response } from 'express';
+import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import { Request, Response } from 'express';
 import userService from '../services/userService';
 
 const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
+
+  console.log(email,password)
 
   try {
     // Vérifie si l'utilisateur existe
@@ -12,8 +15,9 @@ const login = async (req: Request, res: Response) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Vérifie si le mot de passe est correct (utilisation simple pour démonstration)
-    if (password !== user.password) {
+    // Vérifie si le mot de passe est correct
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 

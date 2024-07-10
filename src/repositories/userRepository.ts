@@ -1,5 +1,6 @@
-import { User } from '../models/IUser'; // Assurez-vous d'importer correctement le modèle User
-import Duo from '../models/Duo'; // Importer le modèle Duo
+import bcrypt from 'bcrypt';
+import { User } from '../models/IUser';
+import Duo from '../models/Duo';
 
 class UserRepository {
   static async findByEmail(email: string) {
@@ -15,6 +16,7 @@ class UserRepository {
   }
 
   static async create(user: any) {
+    user.password = await bcrypt.hash(user.password, 10);
     return await User.create(user);
   }
 
@@ -62,22 +64,21 @@ class UserRepository {
     });
   }
 
-  static async updatePassword(id: number, newPassword: string, oldPassword: string) {
+  static async updatePassword(id: number, newPassword: string) {
     const user = await this.findById(id);
-    if (user && oldPassword === user.password) {
-      console.log('user', user);
+    if (user) {
       user.password = newPassword;
       await user.save();
       return user;
     } else {
-      throw new Error('User not found or password incorrect');
+      throw new Error('User not found');
     }
   }
 
   static async getAllAlternantsandTuteur() {
     return await User.findAll({
       where: {
-        role: ['Alternant', 'Tuteur'] // Use array to match either role
+        role: ['Alternant', 'Tuteur']
       }
     });
   }

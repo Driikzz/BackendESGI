@@ -1,5 +1,6 @@
-import { Request, Response } from 'express';
+import bcrypt from 'bcrypt';
 import userRepository from '../repositories/userRepository';
+import { Request, Response } from 'express';
 
 class UserService {
   static async getUserByEmail(email: string) {
@@ -27,11 +28,27 @@ class UserService {
     return await userRepository.findDuosWithUserId(id);
   }
 
-  static async updatePassword(id: number, password: string, oldPassword: string) {
-    if (!id) {
-      return null;
+  static async createUser(user: any) {
+    const hashedPassword = await bcrypt.hash(user.password, 10);
+    user.password = hashedPassword;
+    return await userRepository.create(user);
+  }
+
+  static async updatePassword(id: number, newPassword: string, oldPassword: string) {
+    const user = await userRepository.findById(id);
+    if (!user) {
+      throw new Error('User not found');
     }
-    return await userRepository.updatePassword(id, password, oldPassword);
+
+    // Vérification de l'ancien mot de passe
+    const isOldPasswordValid = await bcrypt.compare(oldPassword, user.password);
+    if (!isOldPasswordValid) {
+      throw new Error('Old password is incorrect');
+    }
+
+    // Hashage du nouveau mot de passe
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    return await userRepository.updatePassword(id, hashedPassword);
   }
 
   static async getAllAlternantsandTuteur() {
@@ -39,7 +56,7 @@ class UserService {
   }
 
   static async getAllAlternants() {
-    return await userRepository.findAllAlternants(); // Appel correct de la méthode du repository
+    return await userRepository.findAllAlternants();
   }
 }
 
