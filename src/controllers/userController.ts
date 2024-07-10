@@ -56,14 +56,16 @@ class UserController {
       user.password = generateRandomPassword();
     }
 
+    const plainPassword = user.password;
+
     try {
-      const newUser = await userRepository.create(user);
-      await sendPasswordEmail(user.email, user.password); 
+      const newUser = await userService.createUser(user); // Hash the password here
+      await sendPasswordEmail(user.email, plainPassword);
 
       return res.status(201).json(newUser);
-    } catch (error) {
+    } catch (error: any) { // Typage explicite de l'erreur
       console.error('Error creating user:', error);
-      return res.status(500).json({ message: 'Error creating user' });
+      return res.status(500).json({ message: 'Error creating user', error });
     }
   }
 
@@ -89,7 +91,7 @@ class UserController {
         return res.status(404).json({ message: 'User not found' });
       }
       return res.status(200).json({ message: 'User soft deleted successfully' });
-    } catch (error) {
+    } catch (error: any) { // Typage explicite de l'erreur
       return res.status(500).json({ message: 'An error occurred', error });
     }
   }
@@ -111,7 +113,7 @@ class UserController {
         return res.status(404).json({ message: 'User not found' });
       }
       return res.status(200).json(updatedUser);
-    } catch (error) {
+    } catch (error: any) { // Typage explicite de l'erreur
       return res.status(500).json({ message: 'An error occurred', error });
     }
   }

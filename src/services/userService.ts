@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 import userRepository from '../repositories/userRepository';
 import { Request, Response } from 'express';
+import { sendPasswordEmail } from '../services/emailService';
 
 class UserService {
   static async getUserByEmail(email: string) {
@@ -29,9 +30,16 @@ class UserService {
   }
 
   static async createUser(user: any) {
+    const plainPassword = user.password; // Stocke le mot de passe en clair temporairement
     const hashedPassword = await bcrypt.hash(user.password, 10);
     user.password = hashedPassword;
-    return await userRepository.create(user);
+
+    const newUser = await userRepository.create(user);
+    
+    // Envoie l'email avec le mot de passe en clair
+    await sendPasswordEmail(user.email, plainPassword);
+
+    return newUser;
   }
 
   static async updatePassword(id: number, newPassword: string, oldPassword: string) {
