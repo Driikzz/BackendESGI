@@ -16,6 +16,10 @@ class rdvService {
     static async findRdvById(id: number) {
         return rdvRepository.findRdvById(id);
     }
+
+    static async getDuosWithoutRdv( tuteurId: number, alternantId: number) {
+        return rdvRepository.getDuosWithoutRdv( tuteurId, alternantId);
+    }
 }
 
 export default rdvService;

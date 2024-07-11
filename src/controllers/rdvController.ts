@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
 import rdvService from '../services/rdvService';
 import rdvRepository from '../repositories/rdvRepository';
-import { sendRdvCancelledEmail, sendRdvCreatedEmail } from '../services/emailService';
+import { sendRdvCancelledEmail, sendRdvCreatedEmail, sendRdvRelanceEmail } from '../services/emailService';
+import duoRepository from '../repositories/duoRepository';
 
 class rdvController {
     static async createRdv(req: Request, res: Response) {
@@ -19,7 +20,6 @@ class rdvController {
                     rdvRepository.findEmailById(rdv.idSuiveur)
                 ]);
 
-                // Envoyer les e-mails avec les adresses récupérées
                 await sendRdvCreatedEmail(tuteurEmail[0], alternantEmail[0], suiveurEmail[0], newRdv);
                 console.log("mail",tuteurEmail[0], alternantEmail[0], suiveurEmail[0]);
 
@@ -50,32 +50,26 @@ class rdvController {
         console.log(rdv);
       
         try {
-          // Extraire les informations nécessaires du rendez-vous
           const id = rdv[0].id;
           console.log("ID : ",id);
       
-          // Récupérer le rendez-vous complet par son ID
           const existingRdv = await rdvService.findRdvById(id);
       
           if (!existingRdv) {
             return res.status(404).json({ message: 'Rdv not found' });
           }
       
-          // Récupérer les IDs de l'alternant et du tuteur depuis le rendez-vous existant
           const idAlternant = existingRdv.idAlternant;
           const idTuteur = existingRdv.idTuteur;
           console.log("IDS : ",idAlternant, idTuteur);
       
-          // Récupérer les adresses e-mail de l'alternant et du tuteur
         const [alternantEmail, tuteurEmail] = await Promise.all([
             rdvRepository.findEmailById(idAlternant),
             rdvRepository.findEmailById(idTuteur),
         ]);
 
-        // Supprimer le rendez-vous de la base de données
         const deletedRdv = await rdvService.deleteRdv(id);
 
-        // Envoyer les courriels d'annulation
         await Promise.all([
             sendRdvCancelledEmail(alternantEmail[0], existingRdv),
             sendRdvCancelledEmail(tuteurEmail[0], existingRdv),
@@ -87,6 +81,72 @@ class rdvController {
           return res.status(500).json({ message: 'Error deleting rdv' });
         }
       };
+
+      static async relanceRdv(req: Request, res: Response) {
+        const id = parseInt(req.params.id);
+    
+        try {
+            const duos = await duoRepository.getDuosBySuiveurId(id);
+            console.log(duos);
+    
+            if (duos && duos.length > 0) {
+                await Promise.all(duos.map(async (duo) => {
+                    const { idTuteur, idAlternant } = duo.dataValues;
+    
+                    const hasRdv = await rdvRepository.getDuosWithoutRdv(idTuteur, idAlternant);
+                    if (hasRdv) {
+                        const [alternantEmail, tuteurEmail] = await Promise.all([
+                            rdvRepository.findEmailById(idAlternant),
+                            rdvRepository.findEmailById(idTuteur)
+                        ]);
+    
+                        await Promise.all([
+                            sendRdvRelanceEmail(tuteurEmail[0], alternantEmail[0]),
+                            console.log("Mail sent to:", alternantEmail[0], tuteurEmail[0])
+                        ]);
+                    }
+                }));
+                return res.status(200).json({ message: 'Relance email sent successfully' });
+            } else {
+                return res.status(404).json({ message: 'Duo not found' });
+            }
+        } catch (error) {
+            console.error('Error sending relance email:', error);
+            return res.status(500).json({ message: 'Error sending relance email' });
+        }
+    }
+
+    static async getDuosWithoutRdv(req: Request, res: Response) {
+        const id = parseInt(req.params.id);
+        try {
+            const findDuo = await duoRepository.getDuosBySuiveurId(id);
+            
+            if (findDuo && findDuo.length > 0) {
+                const duosWithoutRdv = [];
+    
+                for (const duo of findDuo) {
+                    // On assume que duo.dataValues contient les valeurs nécessaires
+                    const { idTuteur, idAlternant } = duo.dataValues;
+    
+                    const rdv = await rdvRepository.getDuosWithoutRdv(idTuteur, idAlternant);
+                    if (rdv === true) {
+                        duosWithoutRdv.push(duo);
+                    }
+                }
+    
+                if (duosWithoutRdv.length > 0) {
+                    return res.status(200).json(duosWithoutRdv);
+                } else {
+                    return res.status(404).json({ message: 'All duos have a RDV' });
+                }
+            } else {
+                return res.status(404).json({ message: 'No duos found for the given suiveur' });
+            }
+        } catch (error) {
+            console.error('Error fetching duos without RDV:', error);
+            return res.status(500).json({ message: 'Error fetching duos without RDV' });
+        }
+    }
 
 
 }

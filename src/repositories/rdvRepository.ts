@@ -65,6 +65,28 @@ class rdvRepository {
     static async findRdvById(id: number) {
         return await Rdv.findByPk(id);
     }
+
+    static async findRdvByUserIds(alternantId: number, tuteurId: number, suiveurId: number) {
+        return await Rdv.findOne({
+          where: {
+            idAlternant: alternantId,
+            idTuteur: tuteurId,
+            idSuiveur: suiveurId
+          }
+        });
+    }
+
+    static async getDuosWithoutRdv(tuteurId: number, alternantId: number): Promise<boolean> {
+        const count = await Rdv.count({
+            where: {
+                idTuteur: tuteurId,
+                idAlternant: alternantId,
+                dateRdv: null as unknown as Date
+            }
+        });
+        return count === 0;
+    }
+    
 }
 
 export default rdvRepository;

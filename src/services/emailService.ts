@@ -80,3 +80,45 @@ export async function sendRdvCancelledEmail(email: string, rdv: any): Promise<vo
     }
 }
 
+export async function sendRdvRelanceEmail(tuteurEmail: string, alternantEmail: string): Promise<void> {
+    console.log("id"  + tuteurEmail + alternantEmail);
+    const mailOptionsTuteur = {
+        from: process.env.EMAIL_USER!,
+        to: tuteurEmail,
+        subject: 'Relance pour la prise de rendez-vous',
+        html: `
+            <p>Bonjour,</p>
+            <p>Nous vous contactons pour vous rappeler de planifier un rendez-vous prochainement.</p>
+            <p>Nous sommes disponibles pour convenir d'un moment qui convient à toutes les parties.</p>
+            <p>Merci de votre attention et de votre coopération.</p>
+            <p>Cordialement,</p>
+            <p>Campus Science U</p>
+        `,
+    };
+
+    const mailOptionsAlternant = {
+        from: process.env.EMAIL_USER!,
+        to: alternantEmail,
+        subject: 'Relance pour la prise de rendez-vous',
+        html: `
+            <p>Bonjour,</p>
+            <p>Nous vous contactons pour vous rappeler de planifier un rendez-vous prochainement.</p>
+            <p>Nous sommes disponibles pour convenir d'un moment qui convient à toutes les parties.</p>
+            <p>Merci de votre attention et de votre coopération.</p>
+            <p>Cordialement,</p>
+            <p>Campus Science U</p>
+        `,
+    };
+
+    try {
+        await Promise.all([
+            transporter.sendMail(mailOptionsTuteur),
+            transporter.sendMail(mailOptionsAlternant),
+        ]);
+        console.log('Relance e-mails sent successfully');
+    } catch (error) {
+        console.error('Error sending relance e-mails:', error);
+        throw new Error('Failed to send relance e-mails');
+    }
+}
+
