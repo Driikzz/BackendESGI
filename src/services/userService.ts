@@ -34,18 +34,14 @@ class UserService {
     return await userRepository.findDuosWithUserId(id);
   }
 
-  static async createUser(user: any) {
+  static async createUser(user: any, randomPassword : any) {
     console.log(`Creating user with email: ${user.email}`);
-    const plainPassword = user.password; // Stocke le mot de passe en clair temporairement
-    const hashedPassword = await bcrypt.hash(plainPassword, 10);
-    console.log(`Plain password: ${plainPassword}`);
+    const hashedPassword = await bcrypt.hash(randomPassword, 10);
+    console.log(`Plain password: ${randomPassword}`);
     console.log(`Hashed password: ${hashedPassword}`);
     user.password = hashedPassword;
 
     const newUser = await userRepository.create(user);
-    
-    // Envoie l'email avec le mot de passe en clair
-    await sendPasswordEmail(user.email, plainPassword);
 
     return newUser;
   }
@@ -56,12 +52,6 @@ class UserService {
 
     if (!existingUser) {
       throw new Error('User not found');
-    }
-
-    // Mise à jour de l'utilisateur
-    if (userUpdates.password) {
-      console.log('Hashing new password for update');
-      userUpdates.password = await bcrypt.hash(userUpdates.password, 10);
     }
 
     await existingUser.update(userUpdates);

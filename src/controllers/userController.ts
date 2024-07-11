@@ -41,36 +41,49 @@ class UserController {
     console.log(`Creating user with email: ${user.email}`);
 
     if (Array.isArray(user)) {
-      const newUsers = await Promise.all(user.map(async (u) => {
-        if (!u.password) {
-          u.password = generateRandomPassword();
-        }
-        return await userService.createUser(u);
-      }));
-      return res.status(201).json(newUsers);
+        const newUsers = await Promise.all(user.map(async (u) => {
+            if (!u.password) {
+                u.password = generateRandomPassword();
+            }
+            return await userService.createUser(u, u.password);
+        }));
+        return res.status(201).json(newUsers);
     }
 
     const existingUser = await userRepository.findByEmail(user.email);
     if (existingUser) {
-      return res.status(400).json({ message: 'User already exists' });
+        return res.status(400).json({ message: 'User already exists' });
     }
-
-    if (!user.password) {
-      user.password = generateRandomPassword();
-    }
-
-    const plainPassword = user.password;
 
     try {
-      const newUser = await userService.createUser(user);
-      await sendPasswordEmail(user.email, plainPassword);
+        if (!user.password) {
+            console.log("Generating random password");
+            const randomPassword = generateRandomPassword();
+            console.log(`Generated password: ${randomPassword}`);
+            
+            // Ajout de gestion d'erreur pour l'envoi d'email
+            try {
+                await sendPasswordEmail(user.email, randomPassword);
+                console.log(`Email sent to ${user.email}`);
+            } catch (emailError) {
+                console.error(`Failed to send email to ${user.email}:`, emailError);
+                return res.status(500).json({ message: 'Failed to send email', error: emailError });
+            }
 
-      return res.status(201).json(newUser);
+            const newUser = await userService.createUser(user, randomPassword);
+            return res.status(201).json(newUser);
+        }
+
+        if (user.password) {
+            const newUser = await userService.createUser(user, user.password);
+            return res.status(201).json(newUser);
+        }
     } catch (error: any) {
-      console.error('Error creating user:', error);
-      return res.status(500).json({ message: 'Error creating user', error });
+        console.error('Error creating user:', error);
+        return res.status(500).json({ message: 'Error creating user', error });
     }
-  }
+}
+
 
   static async updateUser(req: Request, res: Response) {
     const id = parseInt(req.params.id);
@@ -79,41 +92,26 @@ class UserController {
     const existingUser = await userRepository.findById(id);
 
     if (!existingUser) {
-      return res.status(404).json({ message: 'User not found' });
+        return res.status(404).json({ message: 'User not found' });
     }
 
     if (userUpdates.password) {
-      console.log('Hashing new password for update');
-      const hashedPassword = await bcrypt.hash(userUpdates.password, 10);
-      console.log(`Old password: ${existingUser.password}`);
-      console.log(`New hashed password: ${hashedPassword}`);
-      userUpdates.password = hashedPassword;
+        console.log('Hashing new password for update', userUpdates.password);
+        const hashedPassword = await bcrypt.hash(userUpdates.password, 10);
+        userUpdates.password = hashedPassword;
     }
 
     try {
-      const updatedUser = await userService.updateUser(id, userUpdates);
-      console.log(`Updated user: ${JSON.stringify(updatedUser)}`);
-      return res.status(200).json(updatedUser);
+        const updatedUser = await userService.updateUser(id, userUpdates);
+        console.log(`Updated user: ${JSON.stringify(updatedUser)}`);
+        return res.status(200).json(updatedUser);
     } catch (error: any) {
-      console.error('Error updating user:', error);
-      return res.status(500).json({ message: 'Error updating user', error });
+        console.error('Error updating user:', error);
+        return res.status(500).json({ message: 'Error updating user', error });
     }
-  }
+}
 
-  static async deleteUser(req: Request, res: Response) {
-    const userId = parseInt(req.params.id);
-    console.log(`Deleting user ID: ${userId}`);
 
-    try {
-      const deletedUser = await userService.deleteUser(userId);
-      if (deletedUser === undefined) {
-        return res.status(404).json({ message: 'User not found' });
-      }
-      return res.status(200).json({ message: 'User soft deleted successfully' });
-    } catch (error: any) {
-      return res.status(500).json({ message: 'An error occurred', error });
-    }
-  }
 
   static async getDuosWhitUserId(req: Request, res: Response) {
     const userId = parseInt(req.params.id);

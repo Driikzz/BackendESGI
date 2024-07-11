@@ -12,7 +12,8 @@ const transporter = nodemailer.createTransport({
     },
 });
 
-export async function sendPasswordEmail(email: string, password: string): Promise<void> {
+export async function sendPasswordEmail(email: string, password: any): Promise<void> {
+    console.log('Sending email to:', email);
     const mailOptions = {
         from: process.env.EMAIL_USER!,
         to: email,
