@@ -19,6 +19,7 @@ router.get('/rdv/relance/:id', authMiddleware, (req: Request, res: Response) => 
 // récupérer les duos qui n'ont pas de rdv
 router.get('/rdv/duo/:id', authMiddleware, (req: Request, res: Response) => rdvController.getDuosWithoutRdv(req, res));
 
-
+// Route pour récupérer un rdv par tuteurId
+router.get('/rdv/tuteur/:id', authMiddleware, (req: Request, res: Response) => rdvController.getRdvByTuteurId(req, res));
 
 export default router;

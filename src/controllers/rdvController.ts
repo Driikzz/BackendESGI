@@ -148,6 +148,21 @@ class rdvController {
         }
     }
 
+    static async getRdvByTuteurId(req: Request, res: Response) {
+        const id = parseInt(req.params.id);
+        try {
+            const rdv = await rdvService.getRdvByTuteurId(id);
+            if (rdv) {
+                return res.status(200).json(rdv);
+            } else {
+                return res.status(404).json({ message: 'Rdv not found' });
+            }
+        } catch (error) {
+            console.error('Error getting rdv:', error);
+            return res.status(500).json({ message: 'Error getting rdv' });
+        }
+    }
+
 
 }
 

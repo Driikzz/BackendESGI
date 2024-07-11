@@ -86,6 +86,23 @@ class rdvRepository {
         });
         return count === 0;
     }
+
+    static async getRdvByTuteurId(id: number) {
+        try {
+          const rdvs = await Rdv.findAll({
+            where: { idTuteur: id },
+            include: [
+              { model: User, as: 'tuteur' },
+              { model: User, as: 'suiveur' },
+              { model: User, as: 'alternant' }
+            ]
+          });
+          return rdvs;
+        } catch (error) {
+          console.error('Error retrieving rdvs by tuteur ID:', error);
+          throw error;
+        }
+      }
     
 }
 
