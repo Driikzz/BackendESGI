@@ -141,6 +141,17 @@ class UserController {
     const users = await userService.getAllAlternantsandTuteur();
     return res.status(200).json(users);
   };
+
+  static async deleteUser(req: Request, res: Response) {
+    const id = parseInt(req.params.id);
+    console.log(`Deleting user by ID: ${id}`);
+    const user = await userRepository.findById(id);
+    if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+    }
+    await userRepository.deleteUser(id);
+    return res.status(204).send();
+  }
 }
 
 export default UserController;
